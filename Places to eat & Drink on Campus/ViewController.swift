@@ -9,6 +9,26 @@ import UIKit
 import MapKit
 import CoreLocation
 
+//venue structures
+struct FoodData: Codable {
+    var food_venues: [Venue_Info]
+    let last_modified: String
+}
+
+struct Venue_Info: Codable {
+    let name: String
+    let building: String
+    let lat: String
+    let lon: String
+    let description: String
+    let opening_times: [String]
+    let amenities: [String]?
+    let photos: [String]?
+    let URL: URL?
+    let last_modified: String
+}
+
+//view controller class
 class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, MKMapViewDelegate, CLLocationManagerDelegate {
 
     // MARK: Map & Location related stuff
@@ -78,6 +98,30 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     // MARK: View related Stuff
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        //get json information
+        if let url = URL(string: "https://cgi.csc.liv.ac.uk/~phil/Teaching/COMP228/eating_venues/data.json") {
+                   let session = URLSession.shared
+                   session.dataTask(with: url) { (data, response, err) in
+                       guard let jsonData = data else {
+                           return
+                       }
+                       do {
+                           let decoder = JSONDecoder()
+                           let venuInfo = try decoder.decode(FoodData.self, from: jsonData)
+                           var count = 0
+                           for aVenue in venuInfo.food_venues {
+                               count += 1
+                               print("\(count) " + aVenue.name)
+                           }
+                       } catch let jsonErr {
+                           print("Error decoding JSON", jsonErr)
+                       }
+                   }.resume()
+                   print("You are here!")
+               }
+        
+        
         // Make this view controller a delegate of the Location Manager, so that it
         //is able to call functions provided in this view controller.
         locationManager.delegate = self as CLLocationManagerDelegate
