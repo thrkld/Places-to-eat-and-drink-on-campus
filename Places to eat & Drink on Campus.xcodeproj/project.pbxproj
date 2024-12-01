@@ -6,8 +6,15 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		48E32DA22CFCDC7D00447D8C /* Venue+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48E32DA02CFCDC7D00447D8C /* Venue+CoreDataClass.swift */; };
+		48E32DA32CFCDC7D00447D8C /* Venue+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48E32DA12CFCDC7D00447D8C /* Venue+CoreDataProperties.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		48E32D832CFCC22600447D8C /* Places to eat & Drink on Campus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Places to eat & Drink on Campus.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		48E32DA02CFCDC7D00447D8C /* Venue+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "Venue+CoreDataClass.swift"; path = "Places to eat & Drink on Campus/Venue+CoreDataClass.swift"; sourceTree = "<group>"; };
+		48E32DA12CFCDC7D00447D8C /* Venue+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "Venue+CoreDataProperties.swift"; path = "Places to eat & Drink on Campus/Venue+CoreDataProperties.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -45,6 +52,8 @@
 		48E32D7A2CFCC22600447D8C = {
 			isa = PBXGroup;
 			children = (
+				48E32DA02CFCDC7D00447D8C /* Venue+CoreDataClass.swift */,
+				48E32DA12CFCDC7D00447D8C /* Venue+CoreDataProperties.swift */,
 				48E32D852CFCC22600447D8C /* Places to eat & Drink on Campus */,
 				48E32D842CFCC22600447D8C /* Products */,
 			);
@@ -132,6 +141,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				48E32DA22CFCDC7D00447D8C /* Venue+CoreDataClass.swift in Sources */,
+				48E32DA32CFCDC7D00447D8C /* Venue+CoreDataProperties.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

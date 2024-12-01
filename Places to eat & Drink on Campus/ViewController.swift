@@ -8,6 +8,7 @@
 import UIKit
 import MapKit
 import CoreLocation
+import CoreData
 
 //venue structures
 struct FoodData: Codable {
@@ -16,6 +17,8 @@ struct FoodData: Codable {
 }
 
 struct Venue_Info: Codable {
+    let like: Bool?
+    let dislike: Bool?
     let name: String
     let building: String
     let lat: String
@@ -36,6 +39,43 @@ import CoreLocation
 //view controller class
 class ViewController: UIViewController,UITableViewDataSource, UITableViewDelegate,
 MKMapViewDelegate, CLLocationManagerDelegate {
+    
+    // MARK: Core Data related
+    
+    var venues: [Venue] = []
+    
+    func fetchData(){
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        
+        let managedContext = appDelegate.persistentContainer.viewContext
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName:"Venue")
+        
+        do{
+            venues = try managedContext.fetch(fetchRequest) as! [Venue]
+        } catch let error as NSError {
+            print("Could not fetch. \(error), \(error.userInfo)")
+        }
+    }
+    
+    //like a location
+    func saveLike(name: String){
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else{
+            return
+        }
+        
+        let managedContext = appDelegate.persistentContainer.viewContext
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName:"Venue")
+        
+        do{
+            let results = try managedContext.fetch(fetchRequest)
+            
+            if let venueToUpdate = results.first{
+                venueToUpdate.setValue(true, forKey: "like")
+            }
+        } catch {
+            print("Failed to update")
+        }
+    }
     
     // MARK: Map & Location related stuff
     @IBOutlet weak var myMap: MKMapView!
@@ -134,7 +174,7 @@ MKMapViewDelegate, CLLocationManagerDelegate {
                     print("Error decoding JSON", jsonErr)
                 }
             }.resume()
-            print("You are here!")
+        print("You are here!")
         }
     }
 }
