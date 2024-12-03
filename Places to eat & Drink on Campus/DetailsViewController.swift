@@ -12,12 +12,46 @@ class DetailsViewController: UIViewController {
 
     //images
     let images = ["Unliked","Liked"]
+    let images2 = "disliked"
     var venue: Venue = Venue()
     
     //Outlets
     @IBOutlet weak var venueDesc: UITextView!
     @IBOutlet weak var venueTitle: UILabel!
     
+    //dislike a location
+    @IBOutlet weak var dislikeImage: UIImageView!
+    @IBAction func dislike(_ sender: Any) {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else{
+            return
+        }
+        
+        let managedContext = appDelegate.persistentContainer.viewContext
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName:"Venue")
+        
+        //Filter by string
+        let titleString = venueTitle.text!
+        fetchRequest.predicate = NSPredicate(format: "name == %@", titleString)
+        do{
+            let results = try managedContext.fetch(fetchRequest)
+            
+            if let venueToUpdate = results.first{
+                if venueToUpdate.value(forKey: "dislike") as! Bool{
+                    venueToUpdate.setValue(false, forKey: "dislike")
+                    print("DISLIKED = FALSE")
+                    dislikeImage.layer.opacity = 0.2
+                }else {
+                    venueToUpdate.setValue(true, forKey: "dislike")
+                    print("DISLIKED = TRUE")
+                    dislikeImage.layer.opacity = 1.0
+                }
+            }
+            
+            
+        } catch {
+            print("Failed to update")
+        }
+    }
     
     //like a location
     @IBOutlet weak var likeImage: UIImageView!
@@ -36,11 +70,12 @@ class DetailsViewController: UIViewController {
             let results = try managedContext.fetch(fetchRequest)
             
             if let venueToUpdate = results.first{
-                venueToUpdate.setValue(true, forKey: "like")
                 if venueToUpdate.value(forKey: "like") as! Bool{
-                likeImage.image = UIImage(named: images[1])
-                }else {
+                    venueToUpdate.setValue(false, forKey: "like")
                     likeImage.image = UIImage(named: images[0])
+                }else {
+                    venueToUpdate.setValue(true, forKey: "like")
+                    likeImage.image = UIImage(named: images[1])
                 }
             }
             
@@ -58,7 +93,10 @@ class DetailsViewController: UIViewController {
     }
     
     func showInf(){
+        //Title
         venueTitle.text = venue.name
+        
+        //description
         if let data = venue.desc!.data(using: .utf8){
             do{
                 let description : NSAttributedString = try NSAttributedString(data: data, options: [.documentType: NSAttributedString.DocumentType.html],documentAttributes: nil)
@@ -66,6 +104,20 @@ class DetailsViewController: UIViewController {
             }catch{
                 print(error)
             }
+        }
+        
+        //Liked
+        if venue.like{
+            likeImage.image = UIImage(named: images[1])
+        }else{
+            likeImage.image = UIImage(named: images[0])
+        }
+        
+        //Liked
+        if venue.dislike{
+            dislikeImage.layer.opacity = 1.0
+        }else{
+            dislikeImage.layer.opacity = 0.2
         }
         
     }

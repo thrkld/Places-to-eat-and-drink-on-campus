@@ -358,4 +358,11 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         likeTable.reloadData()
         theTable.reloadData()
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        likeTable.reloadData()
+        
+    }
 }
