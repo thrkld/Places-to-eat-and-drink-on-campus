@@ -91,12 +91,14 @@ class DetailsViewController: UIViewController {
         showInf()
         // Do any additional setup after loading the view.
     }
+    @IBOutlet weak var amenitiesText: UITextView!
     
     func showInf(){
         //Title
         venueTitle.text = venue.name
         
         //description
+        venueDesc.isEditable = false
         if let data = venue.desc!.data(using: .utf8){
             do{
                 let description : NSAttributedString = try NSAttributedString(data: data, options: [.documentType: NSAttributedString.DocumentType.html],documentAttributes: nil)
@@ -113,13 +115,19 @@ class DetailsViewController: UIViewController {
             likeImage.image = UIImage(named: images[0])
         }
         
-        //Liked
+        //Disliked
         if venue.dislike{
             dislikeImage.layer.opacity = 1.0
         }else{
             dislikeImage.layer.opacity = 0.2
         }
         
+        //Amentities
+        let topInset = (amenitiesText.frame.size.height - amenitiesText.contentSize.height) / 2
+        amenitiesText.textContainerInset = UIEdgeInsets(top: topInset, left: 0, bottom: 0, right: 0)
+        for amenity in (venue.amenities as? [String] ?? []) {
+            amenitiesText.text.append("\(amenity)\n")
+        }
     }
     
 
