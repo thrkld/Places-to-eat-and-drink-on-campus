@@ -254,6 +254,7 @@
                     <connections>
                         <outlet property="amenitiesText" destination="mOe-no-stA" id="sQd-2w-uaW"/>
                         <outlet property="dislikeImage" destination="CF4-bj-MVk" id="N46-GZ-R8L"/>
+                        <outlet property="lastModifiedlbl" destination="MCh-Ep-XSh" id="FYn-gv-VaH"/>
                         <outlet property="likeImage" destination="INl-od-ZqL" id="6MX-2B-LQ3"/>
                         <outlet property="venueDesc" destination="quH-Wa-mYT" id="hWz-Hv-6w4"/>
                         <outlet property="venueTitle" destination="3Uc-Pr-fTG" id="cwO-ea-7B1"/>

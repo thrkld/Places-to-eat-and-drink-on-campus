@@ -91,6 +91,7 @@ class DetailsViewController: UIViewController {
         showInf()
         // Do any additional setup after loading the view.
     }
+    @IBOutlet weak var lastModifiedlbl: UILabel!
     @IBOutlet weak var amenitiesText: UITextView!
     
     func showInf(){
@@ -128,6 +129,16 @@ class DetailsViewController: UIViewController {
         for amenity in (venue.amenities as? [String] ?? []) {
             amenitiesText.text.append("\(amenity)\n")
         }
+        
+        //last modified
+        var lastModified = venue.last_modified
+        for var i in lastModified!{
+            if(i == (" ")){
+                i = ("\n")
+            }
+        }
+        lastModifiedlbl.text = lastModified
+        
     }
     
 
