@@ -17,8 +17,6 @@ struct FoodData: Codable {
 }
 
 struct Venue_Info: Codable {
-    let like: Bool?
-    let dislike: Bool?
     let name: String
     let building: String
     let lat: String
@@ -29,6 +27,11 @@ struct Venue_Info: Codable {
     let photos: [String]?
     let URL: URL?
     let last_modified: String
+}
+
+struct Venue_DL: Codable{
+    let like: Bool
+    let dislike: Bool
 }
 
 
@@ -42,8 +45,11 @@ MKMapViewDelegate, CLLocationManagerDelegate {
     
     // MARK: Core Data related
     
+    let images = ["Unliked","Liked"]
     var venues: [Venue] = []
+    var venueLikes: [Venue_DL] = []
     
+    //receive venue data
     func fetchData(){
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         
@@ -57,8 +63,87 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         }
     }
     
+    //Adding to core data
+    func saveInitial(foodData: FoodData){
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else{
+            return
+        }
+        var count = 0
+        for aVenue in foodData.food_venues {
+            count += 1
+            let managedContext = appDelegate.persistentContainer.viewContext
+            let venue = NSEntityDescription.insertNewObject(forEntityName: "Venue", into: managedContext) as! Venue
+            
+            venue.name = aVenue.name
+            venue.building = aVenue.building
+            venue.lat = aVenue.lat
+            venue.lon = aVenue.lon
+            venue.desc = aVenue.description
+            
+            //transformables
+            venue.openingTimes = aVenue.opening_times as NSArray
+            venue.amenities = aVenue.amenities as NSArray?
+            venue.photos = aVenue.photos as NSArray?
+            
+            
+            venue.url = aVenue.URL?.absoluteString
+            venue.last_modified = aVenue.last_modified
+            venue.like = false
+            venue.dislike = false
+            
+            do{
+                try managedContext.save()
+                venues.append(venue)
+                print("Saved" + String(count))
+            } catch let error as NSError {
+                print("Could not save. \(error), \(error.userInfo)")
+            }
+        }
+    }
+    
     //like a location
-    func saveLike(name: String){
+    @IBOutlet weak var likeImage: UIImageView!
+    @IBAction func like(_ sender: UIButton) {
+        
+        if let cell = sender.superview?.superview as? UITableViewCell{
+            
+            print("performed")
+            if let indexPath = likeTable.indexPath(for: cell){
+                let venue = venues[indexPath.row]
+                venue.like.toggle()
+                print(indexPath.row)
+                likeTable.reloadRows(at: [indexPath], with: .automatic)
+                guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else{
+                    return
+                }
+                
+                let managedContext = appDelegate.persistentContainer.viewContext
+                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName:"Venue")
+                
+                do {
+                        // Fetch the venue in core data
+                        let results = try managedContext.fetch(fetchRequest)
+                                    
+                        // Ensures name in core data is same as name in venue array
+                        if let venueToUpdate = results.first(where: { ($0 as! Venue).name == venue.name }) {
+                            venueToUpdate.setValue(venue.like, forKey: "like")
+                                        
+                            // Save core data
+                            try managedContext.save()
+                        }
+                } catch {
+                    print("Failed to update")
+                }
+            }
+        }else{
+            print("Can't Identify Cell")
+        }
+    }
+    
+    
+    
+    //dislike a location
+    func dislike(name: String){
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else{
             return
         }
@@ -70,7 +155,7 @@ MKMapViewDelegate, CLLocationManagerDelegate {
             let results = try managedContext.fetch(fetchRequest)
             
             if let venueToUpdate = results.first{
-                venueToUpdate.setValue(true, forKey: "like")
+                venueToUpdate.setValue(true, forKey: "dislike")
             }
         } catch {
             print("Failed to update")
@@ -121,21 +206,70 @@ MKMapViewDelegate, CLLocationManagerDelegate {
     }
     
     //MARK: Table related stuff
-    
+    @IBOutlet weak var likeTable: UITableView!
     @IBOutlet weak var theTable: UITableView!
+    var isScrollingTable = false
+    
+    //Syncs scrolling of tables
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        if isScrollingTable{
+            return
+        }
+        
+        isScrollingTable = true
+        
+        if scrollView == likeTable{
+            theTable.contentOffset = likeTable.contentOffset
+        }else if scrollView == theTable{
+            likeTable.contentOffset = theTable.contentOffset
+        }
+        isScrollingTable = false
+    }
+    
+   
 
         func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-            return 10
+            return venues.count
         }
     
         func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "myCell", for: indexPath)
-            var content = UIListContentConfiguration.subtitleCell()
-            content.text = "\(indexPath.row)"
-            content.secondaryText = "aa"
-            cell.contentConfiguration = content
+            let venue = venues[indexPath.row]
+            var cell : UITableViewCell!
+            if tableView == likeTable{
+                cell = tableView.dequeueReusableCell(withIdentifier: "imageCell", for: indexPath)
+                if let imageView = cell.viewWithTag(1) as? UIImageView {
+                        if venue.like{
+                            
+                        // Assign the image to the image view
+                        imageView.image = UIImage(named: images[1])
+                        }else {
+                            imageView.image = UIImage(named: images[0])
+                        }
+                    }
+                cell.selectionStyle = .none
+            }else{ //normal table
+                cell = tableView.dequeueReusableCell(withIdentifier: "myCell", for: indexPath)
+                var content = UIListContentConfiguration.subtitleCell()
+                content.text = (venue.name ?? "")
+                content.secondaryText = ""
+                cell.contentConfiguration = content
+            }
+            
             return cell
         }
+    //function to reset core data
+    func deleteAll(){
+        
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            return
+        }
+        
+        let managedContext = appDelegate.persistentContainer.viewContext
+        for venue in venues {
+            managedContext.delete(venue)
+        }
+        
+    }
     
     // MARK: View related Stuff
     override func viewDidLoad() {
@@ -156,25 +290,46 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         //configure the map to show the user's location (with a blue dot).
         myMap.showsUserLocation = true
         
-        //acquiring json information
-        if let url = URL(string: "https://cgi.csc.liv.ac.uk/~phil/Teaching/COMP228/eating_venues/data.json"){
-            let session = URLSession.shared
-            session.dataTask(with: url) { (data, response, err) in
-                guard let jsonData = data else {
-                    return
-                }
-                do {
-                    let decoder = JSONDecoder()
-                    let venuInfo = try decoder.decode(FoodData.self, from: jsonData)
-                    var count = 0
-                    for aVenue in venuInfo.food_venues {
-                        count += 1
-                        print("\(count) " + aVenue.name) }
-                } catch let jsonErr {
-                    print("Error decoding JSON", jsonErr)
-                }
-            }.resume()
-        print("You are here!")
+        
+        //Fetching core data for later use
+        fetchData()
+        
+        //Bug fixing
+        //deleteAll()
+        //UserDefaults.standard.set(false, forKey: "hasLaunchedBefore")
+        
+        //acquiring json information and assigning into core data if first launch
+        let launchedBefore = UserDefaults.standard.bool(forKey: "hasLaunchedBefore")
+        
+        
+        //First launch
+        if !launchedBefore {
+            print("PERFORMED")
+            if let url = URL(string: "https://cgi.csc.liv.ac.uk/~phil/Teaching/COMP228/eating_venues/data.json"){
+                let session = URLSession.shared
+                session.dataTask(with: url) { (data, response, err) in
+                    guard let jsonData = data else {
+                        return
+                    }
+                    do {
+                        let decoder = JSONDecoder()
+                        let venuInfo = try decoder.decode(FoodData.self, from: jsonData)
+                        self.saveInitial(foodData: venuInfo)
+                    } catch let jsonErr {
+                        print("Error decoding JSON", jsonErr)
+                    }
+                }.resume()
+                print("You are here!")
+            }
+            
+            UserDefaults.standard.set(true, forKey: "hasLaunchedBefore")
         }
+        
+        //Table settings
+        theTable.showsVerticalScrollIndicator = false
+        likeTable.showsVerticalScrollIndicator = false
+        likeTable.separatorStyle = .none
+        likeTable.reloadData()
+        theTable.reloadData()
     }
 }
