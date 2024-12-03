@@ -8,7 +8,38 @@
 import UIKit
 import CoreData
 
-class DetailsViewController: UIViewController {
+class DetailsViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource {
+    
+    //MARK: PickerView functionality
+    let daysOfWeek: [String] = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        1
+    }
+    
+    //Should Contain all days of week
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        7
+    }
+    
+    //Update time lbl information
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int){
+        let selectedOption = openingTimes[row]
+        openingTimeslbl.text = selectedOption
+    }
+    
+    //Days of week
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return daysOfWeek[row]
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusing view: UIView?) -> UIView {
+            let label = UILabel()
+            label.text = daysOfWeek[row]
+            label.font = UIFont.systemFont(ofSize: 10) // Set your desired font size here
+            label.textAlignment = .center
+            return label
+        }
+    
 
     //images
     let images = ["Unliked","Liked"]
@@ -91,9 +122,14 @@ class DetailsViewController: UIViewController {
         showInf()
         // Do any additional setup after loading the view.
     }
+    
+    //Outlets for information
+    @IBOutlet weak var openingTimeslbl: UILabel!
     @IBOutlet weak var lastModifiedlbl: UILabel!
     @IBOutlet weak var amenitiesText: UITextView!
+    @IBOutlet weak var openingTimesSelect: UIPickerView!
     
+    var openingTimes : [String] = []
     func showInf(){
         //Title
         venueTitle.text = venue.name
@@ -139,6 +175,23 @@ class DetailsViewController: UIViewController {
         }
         lastModifiedlbl.text = lastModified
         
+        //Opening times initial
+        
+        openingTimes = venue.openingTimes as? [String] ?? []
+        //Slight reformat
+        var count = 0
+        for var openingTime in openingTimes{
+            if openingTime.contains("-") {
+                var openingTimeNew = openingTime.split(separator: "-")
+                openingTime = openingTimeNew[0].appending(" - ").appending(openingTimeNew[1])
+                openingTimes[count] = openingTime
+            }else{
+                openingTimes[count] = "CLOSED"
+            }
+            count += 1
+            
+        }
+        openingTimeslbl.text = openingTimes[0]
     }
     
 
