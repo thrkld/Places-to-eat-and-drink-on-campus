@@ -161,7 +161,21 @@ MKMapViewDelegate, CLLocationManagerDelegate {
             print("Failed to update")
         }
     }
-    
+    // MARK: Segue
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?){
+        if segue.identifier == "showDetails"{
+            guard let cell = sender as? UITableViewCell,
+                  let indexPath = theTable.indexPath(for: cell) else{ return }
+            
+        detailsSegue(for: segue, sender: cell, index: indexPath.row)
+        }
+    }
+    func detailsSegue(for segue: UIStoryboardSegue, sender: UITableViewCell?, index: Int) {
+        if segue.identifier == "showDetails"{
+            let destination = segue.destination as! DetailsViewController
+            destination.venue = venues[index]
+        }
+    }
     // MARK: Map & Location related stuff
     @IBOutlet weak var myMap: MKMapView!
     var locationManager = CLLocationManager()
@@ -226,7 +240,14 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         isScrollingTable = false
     }
     
-   
+    func selection(for row: Int){
+        
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let selectedRow = indexPath.row
+        performSegue(withIdentifier: "toDetails", sender: selectedRow)
+    }
 
         func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
             return venues.count
