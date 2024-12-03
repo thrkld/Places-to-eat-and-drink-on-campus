@@ -163,16 +163,21 @@ MKMapViewDelegate, CLLocationManagerDelegate {
     }
     // MARK: Segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?){
-        if segue.identifier == "showDetails"{
-            guard let cell = sender as? UITableViewCell,
-                  let indexPath = theTable.indexPath(for: cell) else{ return }
+        if segue.identifier == "toDetails"{
             
+            
+            guard let cell = sender as? UITableViewCell,
+                  let indexPath = theTable.indexPath(for: cell)
+            else{
+                print("\(type(of: sender))")
+                        return }
         detailsSegue(for: segue, sender: cell, index: indexPath.row)
         }
     }
     func detailsSegue(for segue: UIStoryboardSegue, sender: UITableViewCell?, index: Int) {
-        if segue.identifier == "showDetails"{
+        if segue.identifier == "toDetails"{
             let destination = segue.destination as! DetailsViewController
+            
             destination.venue = venues[index]
         }
     }
@@ -245,8 +250,8 @@ MKMapViewDelegate, CLLocationManagerDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let selectedRow = indexPath.row
-        performSegue(withIdentifier: "toDetails", sender: selectedRow)
+        print("type is: \(type(of: self))")
+        performSegue(withIdentifier: "toDetails", sender: tableView.cellForRow(at: indexPath))
     }
 
         func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {

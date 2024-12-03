@@ -110,7 +110,7 @@
                         <outlet property="likeTable" destination="6vS-ZP-n31" id="3n2-Ys-lO8"/>
                         <outlet property="myMap" destination="GFq-H2-ibb" id="ee0-Xg-ANa"/>
                         <outlet property="theTable" destination="zw7-aZ-BjG" id="4Yt-Xb-yut"/>
-                        <segue destination="FHH-8K-MZb" kind="presentation" identifier="toDetails" modalPresentationStyle="fullScreen" id="S3h-U9-nHF"/>
+                        <segue destination="FHH-8K-MZb" kind="show" identifier="toDetails" id="S3h-U9-nHF"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -147,7 +147,7 @@
                                     </collectionViewCell>
                                 </cells>
                             </collectionView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Chemistry Cafe" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3Uc-Pr-fTG">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Chemistry Cafe" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3Uc-Pr-fTG">
                                 <rect key="frame" x="77" y="121" width="239" height="40"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="33"/>
@@ -176,13 +176,19 @@
                                 <rect key="frame" x="22" y="126" width="47" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="quH-Wa-mYT">
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" usesAttributedText="YES" translatesAutoresizingMaskIntoConstraints="NO" id="quH-Wa-mYT">
                                 <rect key="frame" x="23" y="169" width="347" height="200"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                <mutableString key="text">The caf&amp;eacute;, which serves freshly brewed Grumpy Mule coffee, is located on the ground floor of the Chemistry building, in the main reception area.&lt;br&gt;&lt;br&gt;The caf&amp;eacute; offers a selection of freshly made sandwiches, hot paninis and salads made in our own kitchens on campus. It also offers a range of cakes, confectionary, crisps and cold drinks.&lt;br&gt;&lt;br&gt;The caf&amp;eacute; has plenty of seating in the quiet foyer which would be suitable for a small informal meeting, with facing benches and small tables. There are a number of sockets available for plugging in devices and freshly brewed Grumpy Mule drinks at your fingertips. A great place for a lunch time meeting or just a chat over a coffee.</mutableString>
-                                <color key="textColor" systemColor="labelColor"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                <attributedString key="attributedText">
+                                    <fragment>
+                                        <string key="content">The caf&amp;eacute;, which serves freshly brewed Grumpy Mule coffee, is located on the ground floor of the Chemistry building, in the main reception area.&lt;br&gt;&lt;br&gt;The caf&amp;eacute; offers a selection of freshly made sandwiches, hot paninis and salads made in our own kitchens on campus. It also offers a range of cakes, confectionary, crisps and cold drinks.&lt;br&gt;&lt;br&gt;The caf&amp;eacute; has plenty of seating in the quiet foyer which would be suitable for a small informal meeting, with facing benches and small tables. There are a number of sockets available for plugging in devices and freshly brewed Grumpy Mule drinks at your fingertips. A great place for a lunch time meeting or just a chat over a coffee.</string>
+                                        <attributes>
+                                            <color key="NSColor" systemColor="labelColor"/>
+                                            <font key="NSFont" metaFont="system"/>
+                                        </attributes>
+                                    </fragment>
+                                </attributedString>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="00:00" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pOz-5s-tXW">
@@ -213,6 +219,15 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JF1-go-Pf8">
+                                <rect key="frame" x="324" y="126" width="45" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain"/>
+                                <connections>
+                                    <action selector="like:" destination="FHH-8K-MZb" eventType="touchUpInside" id="83A-DZ-Udz"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Zbc-jv-iEb"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>

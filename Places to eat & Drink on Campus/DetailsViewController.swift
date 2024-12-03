@@ -52,8 +52,22 @@ class DetailsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        print(venue.name!)
+        showInf()
         // Do any additional setup after loading the view.
+    }
+    
+    func showInf(){
+        venueTitle.text = venue.name
+        if let data = venue.desc!.data(using: .utf8){
+            do{
+                let description : NSAttributedString = try NSAttributedString(data: data, options: [.documentType: NSAttributedString.DocumentType.html],documentAttributes: nil)
+                venueDesc.attributedText = description
+            }catch{
+                print(error)
+            }
+        }
+        
     }
     
 
