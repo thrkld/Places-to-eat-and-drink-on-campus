@@ -215,6 +215,9 @@ MKMapViewDelegate, CLLocationManagerDelegate {
             }
             if startTrackingTheUser == true {
                 myMap.setCenter(location, animated: true)
+                venues = distance(currentLoc: myMap.userLocation.coordinate)
+                likeTable.reloadData()
+                theTable.reloadData()
             }
     }
     
@@ -222,6 +225,7 @@ MKMapViewDelegate, CLLocationManagerDelegate {
     //subsequent calls to didUpdateLocations will cause the map to centre on the user's location.
     @objc func startUserTracking() {
         startTrackingTheUser = true
+        
     }
     
     //MARK: Table related stuff
@@ -259,13 +263,12 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         }
     
         func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            let venue = venues[indexPath.row]
+            let venue = distance(currentLoc: myMap.userLocation.coordinate)[indexPath.row]
             var cell : UITableViewCell!
             if tableView == likeTable{
                 cell = tableView.dequeueReusableCell(withIdentifier: "imageCell", for: indexPath)
                 if let imageView = cell.viewWithTag(1) as? UIImageView {
                         if venue.like{
-                            
                         // Assign the image to the image view
                         imageView.image = UIImage(named: images[1])
                         }else {
@@ -363,6 +366,39 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         super.viewDidAppear(animated)
         
         likeTable.reloadData()
+        addPinsToMap()
         
     }
+    
+    //Code to add pins
+    func addPinsToMap(){
+        for venue in venues{
+            let annotation = MKPointAnnotation()
+            annotation.coordinate = CLLocationCoordinate2D(latitude: Double(venue.lat!)!, longitude: Double(venue.lon!)!)
+            annotation.title = venue.name
+            myMap.addAnnotation(annotation)
+        }
+    }
+    
+    func distance(currentLoc: CLLocationCoordinate2D) -> [Venue]
+    {
+        var resultVenues: [Venue] = []
+        var distances: [Double] = []
+        for venue in venues{
+            let currentLocation = CLLocation(latitude: currentLoc.latitude, longitude: currentLoc.longitude)
+            let venueLocation = CLLocation(latitude: Double(venue.lat!)!, longitude: Double(venue.lon!)!)
+            let distance = currentLocation.distance(from: venueLocation)
+            distances.append(distance)
+            resultVenues.append(venue)
+        }
+        var combined = zip(distances, resultVenues).map{($0, $1)} //creates tuple, distances in element 0 venues in element 1
+        combined.sort { $0.0 < $1.0 }
+        
+        resultVenues = combined.map { $0.1 }
+        
+        
+        return resultVenues
+    }
+    
+    
 }

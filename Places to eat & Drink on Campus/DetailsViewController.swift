@@ -145,6 +145,14 @@ class DetailsViewController: UIViewController, UIPickerViewDelegate, UIPickerVie
             }
         }
         
+        if venue.desc!.isEmpty{
+            let emptyText : NSAttributedString = NSAttributedString(string: "<NO DESCRIPTION>")
+            venueDesc.attributedText = emptyText
+            venueDesc.textColor = .red
+            venueDesc.textAlignment = .center
+            venueDesc.font = UIFont(name: "System", size: 30)
+        }
+        
         //Liked
         if venue.like{
             likeImage.image = UIImage(named: images[1])
@@ -160,11 +168,23 @@ class DetailsViewController: UIViewController, UIPickerViewDelegate, UIPickerVie
         }
         
         //Amentities
-        let topInset = (amenitiesText.frame.size.height - amenitiesText.contentSize.height) / 2
-        amenitiesText.textContainerInset = UIEdgeInsets(top: topInset, left: 0, bottom: 0, right: 0)
-        for amenity in (venue.amenities as? [String] ?? []) {
-            amenitiesText.text.append("\(amenity)\n")
+        if venue.amenities as! [String] != []{
+            for amenity in (venue.amenities as? [String] ?? []) {
+                amenitiesText.text.append("\(amenity)\n")
+            }
+        }else{
+            amenitiesText.text = "<BLANK>"
         }
+        // NEED TO FIX AAAH
+        let amenities = venue.amenities as? [String] ?? []
+        var amenityCount: Float = Float(amenities.count)
+        if amenityCount == 0 {
+            amenityCount = 1
+        }
+        let nineAm: Float = 9 * amenityCount
+        let topInset = max(0, Float((amenitiesText.frame.size.height - amenitiesText.contentSize.height)) / 2 + nineAm)
+        amenitiesText.textContainerInset = UIEdgeInsets(top: CGFloat(topInset), left: 0, bottom: 0, right: 0)
+        
         
         //last modified
         var lastModified = venue.last_modified
