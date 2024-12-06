@@ -143,21 +143,42 @@ MKMapViewDelegate, CLLocationManagerDelegate {
     // MARK: Segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?){
         if segue.identifier == "toDetails"{
-            
-            
-            guard let cell = sender as? UITableViewCell,
-                  let indexPath = theTable.indexPath(for: cell)
-            else{
-                print("\(type(of: sender))")
-                        return }
-        detailsSegue(for: segue, sender: cell, index: indexPath.row)
+            print("HELLO1")
+            print(type(of: sender))
+            if let pin = sender as? MKAnnotation{
+                print("HELLO2")
+                // Access the venues array to find a matching venue
+                if let venue = venues.first(where: { $0.name == pin.title }) {
+                    detailsSegueA(for: segue, venue: venue)
+                } else {
+                    print("No matching venue found for pin title: \(pin.title ?? "No title")")
+                }
+            } else if let cell = sender as? UITableViewCell {
+                if let indexPath = theTable.indexPath(for: cell) {
+                    detailsSegueC(for: segue, index: indexPath.row)
+                } else {
+                    print("No index path found for cell.")
+                }
+            } else {
+                print("Sender type is not recognized.")
+                return
+            }
+        
         }
     }
-    func detailsSegue(for segue: UIStoryboardSegue, sender: UITableViewCell?, index: Int) {
+    func detailsSegueC(for segue: UIStoryboardSegue, index: Int) {
         if segue.identifier == "toDetails"{
             let destination = segue.destination as! DetailsViewController
             
             destination.venue = venues[index]
+        }
+    }
+    
+    func detailsSegueA(for segue: UIStoryboardSegue, venue: Venue) {
+        if segue.identifier == "toDetails"{
+            let destination = segue.destination as! DetailsViewController
+            
+            destination.venue = venue
         }
     }
     // MARK: Map & Location related stuff
@@ -377,6 +398,7 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         
     }
     
+    //MARK: Annotation
     //Code to add pins
     func addPinsToMap(){
         for venue in venues{
@@ -386,6 +408,14 @@ MKMapViewDelegate, CLLocationManagerDelegate {
             myMap.addAnnotation(annotation)
         }
     }
+    
+    //Variable for selection (double tap)
+    //Annotation selection
+    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        guard let annotation = view.annotation else { return }
+        performSegue(withIdentifier: "toDetails", sender: annotation)
+    }
+    
     
     func distance(currentLoc: CLLocationCoordinate2D) -> [Venue]
     {
