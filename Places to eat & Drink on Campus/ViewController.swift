@@ -48,6 +48,7 @@ MKMapViewDelegate, CLLocationManagerDelegate {
     let images = ["Unliked","Liked"]
     var venues: [Venue] = []
     var venueLikes: [Venue_DL] = []
+    var venueDistances: [Double] = []
     
     //receive venue data
     func fetchData(){
@@ -119,7 +120,6 @@ MKMapViewDelegate, CLLocationManagerDelegate {
                 
                 let managedContext = appDelegate.persistentContainer.viewContext
                 let fetchRequest = NSFetchRequest<NSManagedObject>(entityName:"Venue")
-                
                 do {
                         // Fetch the venue in core data
                         let results = try managedContext.fetch(fetchRequest)
@@ -140,27 +140,6 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         }
     }
     
-    
-    
-    //dislike a location
-    func dislike(name: String){
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else{
-            return
-        }
-        
-        let managedContext = appDelegate.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName:"Venue")
-        
-        do{
-            let results = try managedContext.fetch(fetchRequest)
-            
-            if let venueToUpdate = results.first{
-                venueToUpdate.setValue(true, forKey: "dislike")
-            }
-        } catch {
-            print("Failed to update")
-        }
-    }
     // MARK: Segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?){
         if segue.identifier == "toDetails"{
@@ -216,6 +195,14 @@ MKMapViewDelegate, CLLocationManagerDelegate {
             if startTrackingTheUser == true {
                 myMap.setCenter(location, animated: true)
                 venues = distance(currentLoc: myMap.userLocation.coordinate)
+                venueDistances = distances(currentLoc: myMap.userLocation.coordinate)
+                
+                print("\n\n\n\n\n")
+                var count = 0
+                for venue in venues{
+                    print(venue.name! + "\(venueDistances[count])")
+                }
+                
                 likeTable.reloadData()
                 theTable.reloadData()
             }
@@ -254,8 +241,10 @@ MKMapViewDelegate, CLLocationManagerDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print("type is: \(type(of: self))")
-        performSegue(withIdentifier: "toDetails", sender: tableView.cellForRow(at: indexPath))
+        if tableView == theTable{
+            print("type is: \(type(of: self))")
+            performSegue(withIdentifier: "toDetails", sender: tableView.cellForRow(at: indexPath))
+        }
     }
 
         func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -263,7 +252,7 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         }
     
         func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-            let venue = distance(currentLoc: myMap.userLocation.coordinate)[indexPath.row]
+            let venue = venues[indexPath.row]
             var cell : UITableViewCell!
             if tableView == likeTable{
                 cell = tableView.dequeueReusableCell(withIdentifier: "imageCell", for: indexPath)
@@ -280,7 +269,25 @@ MKMapViewDelegate, CLLocationManagerDelegate {
                 cell = tableView.dequeueReusableCell(withIdentifier: "myCell", for: indexPath)
                 var content = UIListContentConfiguration.subtitleCell()
                 content.text = (venue.name ?? "")
-                content.secondaryText = ""
+                if venueDistances.count >= (indexPath.row + 1) {
+                    var distance = venueDistances[indexPath.row] //in m for calculation, later in km for formatting
+                    let time = Int(ceil(distance / (1.2 * 60))) //1.2 m/s average walking speed, corrected to minutes and rounded up
+                    distance = distance / 1000 //km
+                    distance = round(distance * 10) / 10 //round to 1dp
+                    var timeString = ""
+                    if time < 1 {
+                        timeString = "<1 minute"
+                    }else if time < 2 {
+                        timeString = "1 minute"
+                    }else{
+                        timeString = String(time) + " minutes"
+                    }
+                    content.secondaryText = ("distance: " + "\(distance)km" + "  |  " + "time: " + timeString)
+                    
+                }else{
+                    content.secondaryText = ""
+                }
+                
                 cell.contentConfiguration = content
             }
             
@@ -398,6 +405,23 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         
         
         return resultVenues
+    }
+    
+    func distances(currentLoc: CLLocationCoordinate2D) -> [Double]{
+        var resultVenues: [Venue] = []
+        var distances: [Double] = []
+        for venue in venues{
+            let currentLocation = CLLocation(latitude: currentLoc.latitude, longitude: currentLoc.longitude)
+            let venueLocation = CLLocation(latitude: Double(venue.lat!)!, longitude: Double(venue.lon!)!)
+            let distance = currentLocation.distance(from: venueLocation)
+            distances.append(distance)
+            resultVenues.append(venue)
+        }
+        var combined = zip(distances, resultVenues).map{($0, $1)} //creates tuple, distances in element 0 venues in element 1
+        combined.sort { $0.0 < $1.0 }
+        
+        distances = combined.map { $0.0 }
+        return distances
     }
     
     
