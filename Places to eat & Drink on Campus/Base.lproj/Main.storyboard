@@ -78,10 +78,9 @@
                                                     <rect key="frame" x="16" y="0.0" width="36" height="44"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 </imageView>
-                                                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DPv-Wg-S65">
+                                                <button opaque="NO" tag="2" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DPv-Wg-S65">
                                                     <rect key="frame" x="1" y="5" width="75" height="33"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                                     <connections>
                                                         <action selector="like:" destination="BYZ-38-t0r" eventType="touchUpInside" id="uMN-I5-BC5"/>
@@ -103,14 +102,18 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <segmentedControl opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="guU-nI-VEb">
+                            <segmentedControl opaque="NO" contentMode="center" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="guU-nI-VEb">
                                 <rect key="frame" x="301" y="532" width="76" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="backgroundColor" systemColor="systemRedColor"/>
+                                <color key="backgroundColor" systemColor="systemBlueColor"/>
                                 <segments>
-                                    <segment title="" image="Disliked"/>
-                                    <segment title="" image="Liked"/>
+                                    <segment title=""/>
+                                    <segment title=""/>
                                 </segments>
+                                <color key="selectedSegmentTintColor" systemColor="tableBackgroundColor"/>
+                                <connections>
+                                    <action selector="Switched:" destination="BYZ-38-t0r" eventType="valueChanged" id="KG0-qG-cqH"/>
+                                </connections>
                             </segmentedControl>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
@@ -118,6 +121,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="ZEa-15-q6V"/>
                     <connections>
+                        <outlet property="LikeControl" destination="guU-nI-VEb" id="LsD-VF-OrB"/>
                         <outlet property="likeTable" destination="6vS-ZP-n31" id="3n2-Ys-lO8"/>
                         <outlet property="myMap" destination="GFq-H2-ibb" id="ee0-Xg-ANa"/>
                         <outlet property="theTable" destination="zw7-aZ-BjG" id="4Yt-Xb-yut"/>
@@ -283,8 +287,11 @@
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
-        <systemColor name="systemRedColor">
-            <color red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        <systemColor name="systemBlueColor">
+            <color red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="tableBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
     </resources>
 </document>

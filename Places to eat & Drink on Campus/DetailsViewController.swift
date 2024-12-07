@@ -75,6 +75,10 @@ class DetailsViewController: UIViewController, UIPickerViewDelegate, UIPickerVie
                     venueToUpdate.setValue(true, forKey: "dislike")
                     print("DISLIKED = TRUE")
                     dislikeImage.layer.opacity = 1.0
+                    if venueToUpdate.value(forKey: "like") as! Bool{
+                        venueToUpdate.setValue(false, forKey: "like")
+                        likeImage.image = UIImage(named: images[0])
+                    }
                 }
             }
             
@@ -107,6 +111,10 @@ class DetailsViewController: UIViewController, UIPickerViewDelegate, UIPickerVie
                 }else {
                     venueToUpdate.setValue(true, forKey: "like")
                     likeImage.image = UIImage(named: images[1])
+                    if venueToUpdate.value(forKey: "dislike") as! Bool{
+                        venueToUpdate.setValue(false, forKey: "dislike")
+                        dislikeImage.layer.opacity = 0.2
+                    }
                 }
             }
             

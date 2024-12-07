@@ -44,7 +44,6 @@ class ViewController: UIViewController,UITableViewDataSource, UITableViewDelegat
 MKMapViewDelegate, CLLocationManagerDelegate {
     
     // MARK: Core Data related
-    
     let images = ["Unliked","Liked"]
     var venues: [Venue] = []
     var venueLikes: [Venue_DL] = []
@@ -102,8 +101,9 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         }
     }
     
-    //like a location
+    //like/dislike a location
     @IBOutlet weak var likeImage: UIImageView!
+    var tableModeLiked: Bool = false
     @IBAction func like(_ sender: UIButton) {
         
         if let cell = sender.superview?.superview as? UITableViewCell{
@@ -111,7 +111,18 @@ MKMapViewDelegate, CLLocationManagerDelegate {
             print("performed")
             if let indexPath = likeTable.indexPath(for: cell){
                 let venue = venues[indexPath.row]
-                venue.like.toggle()
+                print (venue.name)
+                if tableModeLiked{ //if like table
+                    venue.like.toggle()
+                    if (venue.dislike){ //can't be liked and disliked
+                        venue.dislike = false
+                    }
+                }else{ //if dislike table
+                    venue.dislike.toggle()
+                    if (venue.like){ //can't be liked and disliked
+                        venue.like = false
+                    }
+                }
                 print(indexPath.row)
                 likeTable.reloadRows(at: [indexPath], with: .automatic)
                 guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else{
@@ -126,8 +137,10 @@ MKMapViewDelegate, CLLocationManagerDelegate {
                                     
                         // Ensures name in core data is same as name in venue array
                         if let venueToUpdate = results.first(where: { ($0 as! Venue).name == venue.name }) {
+                            //set both no matter what
                             venueToUpdate.setValue(venue.like, forKey: "like")
-                                        
+                            venueToUpdate.setValue(venue.dislike, forKey: "dislike")
+                            
                             // Save core data
                             try managedContext.save()
                         }
@@ -140,13 +153,33 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         }
     }
     
+    // MARK: Segmented Button
+    @IBOutlet weak var LikeControl: UISegmentedControl!
+    
+    func setLikeControlimage(){
+        // Update each segment's image to retain its original color
+            if let liked = UIImage(named: "Liked")?.withRenderingMode(.alwaysOriginal),
+               let disliked = UIImage(named: "Disliked")?.withRenderingMode(.alwaysOriginal) {
+                LikeControl.setImage(disliked, forSegmentAt: 0)
+                LikeControl.setImage(liked, forSegmentAt: 1)
+            }
+    }
+    
+    @IBAction func Switched(_ sender: Any) {
+        if(LikeControl.selectedSegmentIndex == 0){
+            LikeControl.backgroundColor = .red
+            tableModeLiked = false
+        }else{
+            LikeControl.backgroundColor = .systemBlue
+            tableModeLiked = true
+        }
+        likeTable.reloadData()
+    }
     // MARK: Segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?){
         if segue.identifier == "toDetails"{
-            print("HELLO1")
             print(type(of: sender))
             if let pin = sender as? MKAnnotation{
-                print("HELLO2")
                 // Access the venues array to find a matching venue
                 if let venue = venues.first(where: { $0.name == pin.title }) {
                     detailsSegueA(for: segue, venue: venue)
@@ -215,20 +248,25 @@ MKMapViewDelegate, CLLocationManagerDelegate {
             }
             if startTrackingTheUser == true {
                 myMap.setCenter(location, animated: true)
-                venues = distance(currentLoc: myMap.userLocation.coordinate)
-                venueDistances = distances(currentLoc: myMap.userLocation.coordinate)
-                
-                print("\n\n\n\n\n")
-                var count = 0
-                for venue in venues{
-                    print(venue.name! + "\(venueDistances[count])")
+                if likeCooldown{
+                    likeCooldown = false
                 }
-                
-                likeTable.reloadData()
-                theTable.reloadData()
+                if (venues != distance(currentLoc:myMap.userLocation.coordinate)){
+                    //Bug when liking/disliking if this is called, add cooldown after venus array changes
+                    likeCooldown = true
+                    /*print ("\n\n")
+                    print("DISTANCE CALLED")
+                     */
+                    venues = distance(currentLoc: myMap.userLocation.coordinate)
+                    venueDistances = distances(currentLoc: myMap.userLocation.coordinate)
+                    likeTable.reloadData()
+                    theTable.reloadData()
+                    
+                }
             }
     }
     
+    var likeCooldown : Bool = false
     //this method sets the startTrackingTheUser boolean class property to true. Once it's true,
     //subsequent calls to didUpdateLocations will cause the map to centre on the user's location.
     @objc func startUserTracking() {
@@ -276,14 +314,44 @@ MKMapViewDelegate, CLLocationManagerDelegate {
             let venue = venues[indexPath.row]
             var cell : UITableViewCell!
             if tableView == likeTable{
+                
                 cell = tableView.dequeueReusableCell(withIdentifier: "imageCell", for: indexPath)
+                /*Debugging purposes
+                if let button = cell.viewWithTag(2) as? UIButton{
+                    if indexPath.row == 0{
+                        button.backgroundColor = UIColor.red
+                    }else if indexPath.row == 1{
+                        button.backgroundColor = UIColor.blue
+                    }else if indexPath.row == 2{
+                        button.backgroundColor = UIColor.green
+                    }else if indexPath.row == 3{
+                        button.backgroundColor = UIColor.yellow
+                    }else if indexPath.row == 4{
+                        button.backgroundColor = UIColor.purple
+                    }else if indexPath.row == 5{
+                        button.backgroundColor = UIColor.orange
+                    }
+                }
+                 */
                 if let imageView = cell.viewWithTag(1) as? UIImageView {
+                    
+                    if tableModeLiked{
+                        imageView.layer.opacity = 1.0
                         if venue.like{
-                        // Assign the image to the image view
-                        imageView.image = UIImage(named: images[1])
+                            // Assign the image to the image view
+                            imageView.image = UIImage(named: images[1])
                         }else {
                             imageView.image = UIImage(named: images[0])
                         }
+                    }else{
+                        if venue.dislike{
+                            imageView.image = UIImage(named: "Disliked")
+                            imageView.layer.opacity = 1.0
+                        }else{
+                            imageView.image = UIImage(named: "Disliked")
+                            imageView.layer.opacity = 0.2
+                        }
+                    }
                     }
                 cell.selectionStyle = .none
             }else{ //normal table
@@ -388,6 +456,8 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         likeTable.separatorStyle = .none
         likeTable.reloadData()
         theTable.reloadData()
+        //setLikeControlimage()
+        LikeControl.backgroundColor = .red
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -432,7 +502,6 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         combined.sort { $0.0 < $1.0 }
         
         resultVenues = combined.map { $0.1 }
-        
         
         return resultVenues
     }
