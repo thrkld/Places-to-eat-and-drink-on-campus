@@ -102,52 +102,57 @@ MKMapViewDelegate, CLLocationManagerDelegate {
     }
     
     //like/dislike a location
-    @IBOutlet weak var likeImage: UIImageView!
+    //@IBOutlet weak var likeImage: UIImageView!
     var tableModeLiked: Bool = false
     @IBAction func like(_ sender: UIButton) {
         
-        if let cell = sender.superview?.superview as? UITableViewCell{
-            
-            print("performed")
-            if let indexPath = likeTable.indexPath(for: cell){
-                let venue = venues[indexPath.row]
-                print (venue.name)
-                if tableModeLiked{ //if like table
-                    venue.like.toggle()
-                    if (venue.dislike){ //can't be liked and disliked
-                        venue.dislike = false
-                    }
-                }else{ //if dislike table
-                    venue.dislike.toggle()
-                    if (venue.like){ //can't be liked and disliked
-                        venue.like = false
-                    }
-                }
-                print(indexPath.row)
-                likeTable.reloadRows(at: [indexPath], with: .automatic)
-                guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else{
-                    return
-                }
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else{
+            return
+        }
+        let managedContext = appDelegate.persistentContainer.viewContext
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName:"Venue")
+        
+        //Button pressed
+        if let btn = sender as? UIButton{
+            kFontRussian
+            let parent = btn.superview!
+            let likeImage = parent.viewWithTag(1) as! UIImageView
+                fetchRequest.predicate = NSPredicate(format: "name == %@", btn.currentTitle!)
+                do{
+                let results = try managedContext.fetch(fetchRequest)
+                //like
                 
-                let managedContext = appDelegate.persistentContainer.viewContext
-                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName:"Venue")
-                do {
-                        // Fetch the venue in core data
-                        let results = try managedContext.fetch(fetchRequest)
-                                    
-                        // Ensures name in core data is same as name in venue array
-                        if let venueToUpdate = results.first(where: { ($0 as! Venue).name == venue.name }) {
-                            //set both no matter what
-                            venueToUpdate.setValue(venue.like, forKey: "like")
-                            venueToUpdate.setValue(venue.dislike, forKey: "dislike")
-                            
-                            // Save core data
-                            try managedContext.save()
+                if let venueToUpdate = results.first{
+                    if tableModeLiked{ //like
+                        if venueToUpdate.value(forKey: "like") as! Bool{ //unliking
+                            venueToUpdate.setValue(false, forKey: "like")
+                            likeImage.image = UIImage(named: images[0])
+                        }else { //liking
+                            venueToUpdate.setValue(true, forKey: "like")
+                            likeImage.image = UIImage(named: images[1])
+                            if venueToUpdate.value(forKey: "dislike") as! Bool{
+                                venueToUpdate.setValue(false, forKey: "dislike")
+                            }
                         }
-                } catch {
-                    print("Failed to update")
+                    }else{ //dislike
+                        if venueToUpdate.value(forKey: "dislike") as! Bool{ //undisliking
+                            venueToUpdate.setValue(false, forKey: "dislike")
+                            likeImage.layer.opacity = 0.2
+                        }else { //disliking
+                            venueToUpdate.setValue(true, forKey: "dislike")
+                            likeImage.layer.opacity = 1.0
+                            if venueToUpdate.value(forKey: "like") as! Bool{
+                                venueToUpdate.setValue(false, forKey: "like")
+                            }
+                        }
+                    }
                 }
+                try managedContext.save()
+                
+            } catch {
+                print("Failed to update")
             }
+        
         }else{
             print("Can't Identify Cell")
         }
@@ -316,8 +321,11 @@ MKMapViewDelegate, CLLocationManagerDelegate {
             if tableView == likeTable{
                 
                 cell = tableView.dequeueReusableCell(withIdentifier: "imageCell", for: indexPath)
-                /*Debugging purposes
+                
                 if let button = cell.viewWithTag(2) as? UIButton{
+                    button.setTitle(venue.name, for: .normal)
+                }
+                    /*
                     if indexPath.row == 0{
                         button.backgroundColor = UIColor.red
                     }else if indexPath.row == 1{
