@@ -124,10 +124,10 @@
                     </view>
                     <navigationItem key="navigationItem" id="ZEa-15-q6V"/>
                     <connections>
-                        <outlet property="LikeControl" destination="guU-nI-VEb" id="LsD-VF-OrB"/>
+                        <outlet property="LikeModeSwitch" destination="guU-nI-VEb" id="LsD-VF-OrB"/>
                         <outlet property="likeTable" destination="6vS-ZP-n31" id="3n2-Ys-lO8"/>
                         <outlet property="myMap" destination="GFq-H2-ibb" id="ee0-Xg-ANa"/>
-                        <outlet property="theTable" destination="zw7-aZ-BjG" id="4Yt-Xb-yut"/>
+                        <outlet property="venueTable" destination="zw7-aZ-BjG" id="4Yt-Xb-yut"/>
                         <segue destination="FHH-8K-MZb" kind="show" identifier="toDetails" id="S3h-U9-nHF"/>
                     </connections>
                 </viewController>
@@ -225,7 +225,7 @@
                                 </connections>
                             </button>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" fixedFrame="YES" editable="NO" textAlignment="center" selectable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mOe-no-stA">
-                                <rect key="frame" x="115" y="409" width="163" height="67"/>
+                                <rect key="frame" x="116" y="409" width="163" height="67"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <color key="textColor" name="AccentColor"/>
@@ -274,7 +274,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="fnA-sd-ZKB"/>
                     <connections>
-                        <outlet property="amenitiesText" destination="mOe-no-stA" id="sQd-2w-uaW"/>
+                        <outlet property="amenitiesTextView" destination="mOe-no-stA" id="sQd-2w-uaW"/>
                         <outlet property="dislikeImage" destination="CF4-bj-MVk" id="N46-GZ-R8L"/>
                         <outlet property="lastModifiedlbl" destination="MCh-Ep-XSh" id="FYn-gv-VaH"/>
                         <outlet property="likeImage" destination="INl-od-ZqL" id="6MX-2B-LQ3"/>
