@@ -63,40 +63,49 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         }
     }
     
-    //Adding to core data
+    //Adding to core data if a new venue
     func saveInitial(foodData: FoodData){
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else{
             return
         }
         var count = 0
         for aVenue in foodData.food_venues {
+            var unique : Bool = true
             count += 1
             let managedContext = appDelegate.persistentContainer.viewContext
-            let venue = NSEntityDescription.insertNewObject(forEntityName: "Venue", into: managedContext) as! Venue
+            for venue in venues {
+                if venue.name == aVenue.name {
+                    unique = false //flag if already in core data
+                }
+            }
             
-            venue.name = aVenue.name
-            venue.building = aVenue.building
-            venue.lat = aVenue.lat
-            venue.lon = aVenue.lon
-            venue.desc = aVenue.description
-            
-            //transformables
-            venue.openingTimes = aVenue.opening_times as NSArray
-            venue.amenities = aVenue.amenities as NSArray?
-            venue.photos = aVenue.photos as NSArray?
-            
-            
-            venue.url = aVenue.URL?.absoluteString
-            venue.last_modified = aVenue.last_modified
-            venue.like = false
-            venue.dislike = false
-            
-            do{
-                try managedContext.save()
-                venues.append(venue)
-                print("Saved" + String(count))
-            } catch let error as NSError {
-                print("Could not save. \(error), \(error.userInfo)")
+            if unique{ //Only add venue if unique
+                let venue = NSEntityDescription.insertNewObject(forEntityName: "Venue", into: managedContext) as! Venue
+                
+                venue.name = aVenue.name
+                venue.building = aVenue.building
+                venue.lat = aVenue.lat
+                venue.lon = aVenue.lon
+                venue.desc = aVenue.description
+                
+                //transformables
+                venue.openingTimes = aVenue.opening_times as NSArray
+                venue.amenities = aVenue.amenities as NSArray?
+                venue.photos = aVenue.photos as NSArray?
+                
+                
+                venue.url = aVenue.URL?.absoluteString
+                venue.last_modified = aVenue.last_modified
+                venue.like = false
+                venue.dislike = false
+                
+                do{
+                    try managedContext.save()
+                    venues.append(venue)
+                    print("Saved" + String(count))
+                } catch let error as NSError {
+                    print("Could not save. \(error), \(error.userInfo)")
+                }
             }
         }
     }
@@ -423,41 +432,20 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         //configure the map to show the user's location (with a blue dot).
         myMap.showsUserLocation = true
         
-        
-        //Fetching core data for later use
-        fetchData()
-        
         //Bug fixing
         //deleteAll()
         //UserDefaults.standard.set(false, forKey: "hasLaunchedBefore")
         
+        //fetch Data for later use
+        fetchData()
+        
+        //first launch implementation of core data integration
+        //launchedBefore()
+        
+        //Only add venues if new ones, ensures no like rewriting
+        getJsonInfo()
+        //loadVenues()
         //acquiring json information and assigning into core data if first launch
-        let launchedBefore = UserDefaults.standard.bool(forKey: "hasLaunchedBefore")
-        
-        
-        //First launch
-        if !launchedBefore {
-            print("PERFORMED")
-            if let url = URL(string: "https://cgi.csc.liv.ac.uk/~phil/Teaching/COMP228/eating_venues/data.json"){
-                let session = URLSession.shared
-                session.dataTask(with: url) { (data, response, err) in
-                    guard let jsonData = data else {
-                        return
-                    }
-                    do {
-                        let decoder = JSONDecoder()
-                        let venuInfo = try decoder.decode(FoodData.self, from: jsonData)
-                        self.saveInitial(foodData: venuInfo)
-                    } catch let jsonErr {
-                        print("Error decoding JSON", jsonErr)
-                    }
-                }.resume()
-                print("You are here!")
-            }
-            
-            UserDefaults.standard.set(true, forKey: "hasLaunchedBefore")
-        }
-        
         //Table settings
         theTable.showsVerticalScrollIndicator = false
         likeTable.showsVerticalScrollIndicator = false
@@ -466,6 +454,36 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         theTable.reloadData()
         //setLikeControlimage()
         LikeControl.backgroundColor = .red
+        
+        
+    }
+    
+    //Gets JSON information
+    func getJsonInfo(){
+        if let url = URL(string: "https://cgi.csc.liv.ac.uk/~phil/Teaching/COMP228/eating_venues/data.json"){
+            let session = URLSession.shared
+            session.dataTask(with: url) { (data, response, err) in
+                guard let jsonData = data else {
+                    return
+                }
+                do {
+                    let decoder = JSONDecoder()
+                    let venuInfo = try decoder.decode(FoodData.self, from: jsonData)
+                    self.saveInitial(foodData: venuInfo)
+                } catch let jsonErr {
+                    print("Error decoding JSON", jsonErr)
+                }
+            }.resume()
+            print("You are here!")
+        }
+    }
+    //Gets JSON information if first launch
+    func launchedBefore(){
+        let launchedBefore = UserDefaults.standard.bool(forKey: "hasLaunchedBefore")
+        if !launchedBefore {
+            getJsonInfo()
+            UserDefaults.standard.set(true, forKey: "hasLaunchedBefore")
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
