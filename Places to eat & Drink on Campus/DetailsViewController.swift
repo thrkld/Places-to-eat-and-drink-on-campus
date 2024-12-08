@@ -8,7 +8,24 @@
 import UIKit
 import CoreData
 
-class DetailsViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource {
+class DetailsViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource, UICollectionViewDelegate, UICollectionViewDataSource {
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        let photos = venue.photos as! [String]
+        if photos.count == 0{
+            return 1 //"empty" cell
+        }
+        return photos.count //shouldn't occur!
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
+        if venue.photos as! [String] == []{
+            cell.contentView.addSubview(UIImageView(image: UIImage(named: "empty")!)) //add "empty" image
+        }
+        return cell
+    }
+    
     
     //MARK: PickerView functionality
     let daysOfWeek: [String] = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
@@ -183,16 +200,6 @@ class DetailsViewController: UIViewController, UIPickerViewDelegate, UIPickerVie
         }else{
             amenitiesText.text = "<BLANK>"
         }
-        // NEED TO FIX AAAH
-        let amenities = venue.amenities as? [String] ?? []
-        var amenityCount: Float = Float(amenities.count)
-        if amenityCount == 0 {
-            amenityCount = 1
-        }
-        let nineAm: Float = 9 * amenityCount
-        let topInset = max(0, Float((amenitiesText.frame.size.height - amenitiesText.contentSize.height)) / 2 + nineAm)
-        amenitiesText.textContainerInset = UIEdgeInsets(top: CGFloat(topInset), left: 0, bottom: 0, right: 0)
-        
         
         //last modified
         var lastModified = venue.last_modified
@@ -204,7 +211,6 @@ class DetailsViewController: UIViewController, UIPickerViewDelegate, UIPickerVie
         lastModifiedlbl.text = lastModified
         
         //Opening times initial
-        
         openingTimes = venue.openingTimes as? [String] ?? []
         //Slight reformat
         var count = 0
@@ -220,6 +226,8 @@ class DetailsViewController: UIViewController, UIPickerViewDelegate, UIPickerVie
             
         }
         openingTimeslbl.text = openingTimes[0]
+        
+        //Photos dealt with in collection view
     }
     
 

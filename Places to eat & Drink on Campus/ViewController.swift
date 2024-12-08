@@ -491,6 +491,7 @@ MKMapViewDelegate, CLLocationManagerDelegate {
     //Annotation selection
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         guard let annotation = view.annotation else { return }
+        mapView.deselectAnnotation(annotation, animated: false)
         performSegue(withIdentifier: "toDetails", sender: annotation)
     }
     
