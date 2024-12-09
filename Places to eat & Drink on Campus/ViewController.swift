@@ -58,7 +58,7 @@ MKMapViewDelegate, CLLocationManagerDelegate {
     }
     
     
-     //Function saves NEW venues in FoodData argument to 'venues' array (no duplicate names to ensure likes/dislikes remain from core data)
+     //Function saves venues in FoodData argument to 'venues' array and updates core data for changes in a location
     func saveInitial(foodData: FoodData){
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else{return}
         
@@ -68,15 +68,40 @@ MKMapViewDelegate, CLLocationManagerDelegate {
             count += 1
             let managedContext = appDelegate.persistentContainer.viewContext
             
-            //Check if already in core data
-            var newVenue : Bool = true
-            for venue in venues {
-                if venue.name == aVenue.name {
-                    newVenue = false
-                }
-            }
+            //Check if in core data already according to lat and lon
+            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName:"Venue")
+            let predicate1 = NSPredicate(format: "lat == %@", aVenue.lat)
+            let predicate2 = NSPredicate(format: "lon == %@", aVenue.lon)
+            fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [predicate1, predicate2])
             
-            if newVenue{
+            var newVenue : Bool = false //new venue false by default
+            do{
+                let results = try managedContext.fetch(fetchRequest)
+                if results.isEmpty{ //if not fetched no match and is new array
+                    newVenue = true
+                }else{
+                    let venue = results.first!
+                    venue.setValue(aVenue.building, forKey: "building")
+                    venue.setValue(aVenue.name, forKey: "name")
+                    venue.setValue(aVenue.description, forKey: "desc")
+                    venue.setValue(aVenue.opening_times as NSArray, forKey: "openingTimes")
+                    venue.setValue(aVenue.amenities as NSArray?, forKey: "amenities")
+                    venue.setValue(aVenue.URL?.absoluteString, forKey: "url")
+                    venue.setValue(aVenue.photos as NSArray?, forKey: "photos")
+                    venue.setValue(aVenue.last_modified, forKey: "last_modified")
+                    do{
+                        //Save to core data
+                        try managedContext.save()
+                        print("Saved" + String(count))
+                    } catch let error as NSError {
+                        print("Could not save. \(error), \(error.userInfo)")
+                    }
+                }
+            }catch{
+                print("Error thrown")
+            }
+                
+            if newVenue{ //Save new venue (false like and dislike defaults)
                 let venue = NSEntityDescription.insertNewObject(forEntityName: "Venue", into: managedContext) as! Venue
                 venue.name = aVenue.name
                 venue.building = aVenue.building
@@ -90,9 +115,7 @@ MKMapViewDelegate, CLLocationManagerDelegate {
                 venue.last_modified = aVenue.last_modified
                 venue.like = false
                 venue.dislike = false
-                
-                do{
-                    //Save to core data and update locally stored array
+                do{ //Save to core data and update locally stored array
                     try managedContext.save()
                     venues.append(venue)
                     print("Saved" + String(count))
@@ -246,12 +269,12 @@ MKMapViewDelegate, CLLocationManagerDelegate {
     var startTrackingTheUser = false
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        
         let locationOfUser = locations[0] //Returns user's location (usually)
         let latitude = locationOfUser.coordinate.latitude
         let longitude = locationOfUser.coordinate.longitude
         
         let location = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-        
         if firstRun {
             firstRun = false
             
@@ -264,13 +287,26 @@ MKMapViewDelegate, CLLocationManagerDelegate {
             let region = MKCoordinateRegion(center: location, span: span)
             self.myMap.setRegion(region, animated: true)
             
-            //Timer for changing appropriate values
-            _ = Timer.scheduledTimer(timeInterval: 5.0, target: self, selector:
+            //the following code is to prevent a bug which affects the zooming of the map to the
+            //user's location.
+            //We have to leave a little time after our initial setting of the map's location and
+            //span,
+            //before we can start centering on the user's location, otherwise the map never zooms in
+            //because the
+            //intial zoom level and span are applied to the setCenter( ) method call, rather than
+            //our "requested" ones,
+            //once they have taken effect on the map.
+            //we setup a timer to set our boolean to true in 5s
+            _ = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector:
         #selector(startUserTracking), userInfo: nil, repeats: false)
             }
 
             if startTrackingTheUser == true {
+                
                 myMap.setCenter(location, animated: true)
+                
+                //Adds pins if not added already
+                addPinsToMap()
 
                 //Identifies whether the venues cloesness order has been changed to alter table accordingly
                 if (venues != venuesByD(currentLoc:myMap.userLocation.coordinate)){
@@ -425,9 +461,10 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         locationManager.delegate = self as CLLocationManagerDelegate
         locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
         locationManager.requestWhenInUseAuthorization()
+        
+        print("aaaaaaaaaaaah")
         locationManager.startUpdatingLocation()
         myMap.showsUserLocation = true
-        
         //fetch Data for later use
         fetchData()
         
@@ -441,6 +478,7 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         likeTable.reloadData()
         venueTable.reloadData()
         LikeModeSwitch.backgroundColor = .red
+        
     }
     
     //Gets JSON information
@@ -471,15 +509,19 @@ MKMapViewDelegate, CLLocationManagerDelegate {
         addPinsToMap()
     }
     
-    //MARK: Annotation
+    //MARK: Annotations
+    var pinsAdded : Bool = false
     //Code to add pins at all venue locations
     func addPinsToMap(){
-        for venue in venues{
-            let annotation = MKPointAnnotation()
-            annotation.coordinate = CLLocationCoordinate2D(latitude: Double(venue.lat!)!, longitude: Double(venue.lon!)!)
-            annotation.title = venue.name
-            myMap.addAnnotation(annotation)
+        if pinsAdded == false {
+            for venue in venues{
+                let annotation = MKPointAnnotation()
+                annotation.coordinate = CLLocationCoordinate2D(latitude: Double(venue.lat!)!, longitude: Double(venue.lon!)!)
+                annotation.title = venue.name
+                myMap.addAnnotation(annotation)
+            }
         }
+        
     }
 
     //Annotation selection

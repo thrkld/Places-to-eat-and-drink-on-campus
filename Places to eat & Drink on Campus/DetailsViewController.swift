@@ -69,8 +69,10 @@ class DetailsViewController: UIViewController, UIPickerViewDelegate, UIPickerVie
             label.textAlignment = .center
             return label
         }
-    
-
+    //MARK: LINK FUNCTIONALITY
+    @IBAction func HyperlinkPressed(_ sender: Any) {
+        UIApplication.shared.open(URL(string: venue.url!)!)
+    }
     //MARK: LIKE FUNCTIONALITY
     let likeImages = ["Unliked","Liked"]
     
