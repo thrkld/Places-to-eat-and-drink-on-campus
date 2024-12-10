@@ -189,6 +189,8 @@ class DetailsViewController: UIViewController, UIPickerViewDelegate, UIPickerVie
             }
         }
         
+        //Hello
+        
         
         if venue.desc!.isEmpty{ //display "<NO DESCRIPTION>" in large red font
             let emptyText : NSAttributedString = NSAttributedString(string: "<NO DESCRIPTION>")
